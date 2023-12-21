@@ -6,6 +6,7 @@ use node_template_runtime::{
 	SudoConfig, SystemConfig, WASM_BINARY,
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
+use sc_chain_spec::Properties;
 use sc_service::ChainType;
 use sc_telemetry::TelemetryEndpoints;
 use sp_consensus_babe::AuthorityId as BabeId;
@@ -54,13 +55,18 @@ pub fn authority_keys_from_seed(s: &str) -> (AccountId, AccountId, BabeId, Grand
 	)
 }
 
+fn properties(token_symbol: &str) -> Option<Properties> {
+	let mut properties = Properties::new();
+	properties.insert("tokenSymbol".into(), token_symbol.into());
+	properties.insert("tokenDecimals".into(), 10u32.into());
+	Some(properties)
+}
+
 pub fn development_config() -> Result<ChainSpec, String> {
 	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
 
 	Ok(ChainSpec::from_genesis(
-		// Name
 		"Development",
-		// ID
 		"dev",
 		ChainType::Development,
 		move || {
@@ -81,16 +87,11 @@ pub fn development_config() -> Result<ChainSpec, String> {
 				true,
 			)
 		},
-		// Bootnodes
 		vec![],
-		// Telemetry
-		None,
-		// Protocol ID
 		None,
 		None,
-		// Properties
 		None,
-		// Extensions
+		properties("MSM-DEVELOP"),
 		None,
 	))
 }
@@ -99,9 +100,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
 
 	Ok(ChainSpec::from_genesis(
-		// Name
 		"Local Testnet",
-		// ID
 		"local_testnet",
 		ChainType::Local,
 		move || {
@@ -130,16 +129,11 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 				true,
 			)
 		},
-		// Bootnodes
 		vec![],
-		// Telemetry
-		None,
-		// Protocol ID
-		None,
-		// Properties
 		None,
 		None,
-		// Extensions
+		None,
+		properties("MSM-LOCAL-TESTNET"),
 		None,
 	))
 }
