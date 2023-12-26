@@ -369,8 +369,8 @@ impl Get<Option<BalancingConfig>> for OffchainRandomBalancing {
 			max => {
 				let seed = sp_io::offchain::random_seed();
 				let random = <u32>::decode(&mut TrailingZeroInput::new(&seed))
-					.expect("input is padded with zeroes; qed") %
-					max.saturating_add(1);
+					.expect("input is padded with zeroes; qed")
+					% max.saturating_add(1);
 				random as usize
 			},
 		};
@@ -654,7 +654,6 @@ impl pallet_im_online::Config for Runtime {
 // 	type MaxAllowedBytes = MaxAllowedBytes;
 // }
 
-
 /// Configure the pallet-template in pallets/template.
 impl pallet_template::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
@@ -866,7 +865,7 @@ impl_runtime_apis! {
 			SessionKeys::decode_into_raw_public_keys(&encoded)
 		}
 	}
-	
+
 	// impl sp_statement_store::runtime_api::ValidateStatement<Block> for Runtime {
 	// 	fn validate_statement(
 	// 		source: sp_statement_store::runtime_api::StatementSource,
