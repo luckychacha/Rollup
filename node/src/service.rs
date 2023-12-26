@@ -1,8 +1,9 @@
 //! Service and ServiceFactory implementation. Specialized wrapper over substrate service.
 
 use std::sync::Arc;
-
-use sc_client_api::BlockBackend;
+// use async_trait::async_trait;
+use futures::StreamExt;
+use sc_client_api::{BlockBackend, BlockchainEvents};
 use sc_consensus_babe::SlotProportion;
 pub use sc_executor::NativeElseWasmExecutor;
 use sc_executor::WasmExecutor;
@@ -14,6 +15,7 @@ use sc_service::{error::Error as ServiceError, Configuration, RpcHandlers, TaskM
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use sc_transaction_pool_api::OffchainTransactionPoolFactory;
 use sp_runtime::traits::Block as BlockT;
+use sp_runtime::traits::Header;
 
 use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
 
@@ -58,8 +60,8 @@ type FullGrandpaBlockImport =
 /// Builds a new service for a full client.
 pub fn new_full(config: Configuration, cli: Cli) -> Result<TaskManager, ServiceError> {
 	let database_source = config.database.clone();
-	let task_manager = new_full_base(config, cli.no_hardware_benchmarks, |_, _| ())
-		.map(|NewFullBase { task_manager, .. }| task_manager)?;
+	let (task_manager, client) = new_full_base(config, cli.no_hardware_benchmarks, |_, _| ())
+		.map(|NewFullBase { task_manager, client, .. }| (task_manager, client))?;
 
 	sc_storage_monitor::StorageMonitorService::try_spawn(
 		cli.storage_monitor,
@@ -68,9 +70,52 @@ pub fn new_full(config: Configuration, cli: Cli) -> Result<TaskManager, ServiceE
 	)
 	.map_err(|e| ServiceError::Application(e.into()))?;
 
+	let client_c = client.clone();
+
+	task_manager.spawn_essential_handle().spawn(
+		"node-block-notification",
+		Some("substrate-exercise"),
+		test_log_when_block_generate(client.clone()),
+	);
+
+	task_manager.spawn_essential_handle().spawn(
+		"node-block-finalized-notification",
+		Some("substrate-exercise"),
+		test_log_when_block_finalized(client.clone()),
+	);
+
 	Ok(task_manager)
 }
 
+async fn test_log_when_block_generate<B, C>(client: Arc<C>)
+where
+	B: BlockT,
+	C: BlockchainEvents<B> + 'static,
+{
+	let mut notification_st = client.import_notification_stream();
+	while let Some(notification) = notification_st.next().await {
+		log::info!(
+			"import_notification_stream info:  hash {:?} number: {:?}",
+			notification.hash,
+			notification.header.number(),
+		);
+	}
+}
+
+async fn test_log_when_block_finalized<B, C>(client: Arc<C>)
+where
+	B: BlockT,
+	C: BlockchainEvents<B> + 'static,
+{
+	let mut notification_st = client.finality_notification_stream();
+	while let Some(notification) = notification_st.next().await {
+		log::info!(
+			"finality_notification_stream info: hash: {:?} number: {:?}",
+			notification.hash,
+			notification.header.number(),
+		);
+	}
+}
 /// Result of [`new_full_base`].
 pub struct NewFullBase {
 	/// The task manager of the node.
