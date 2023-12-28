@@ -19,8 +19,11 @@ use sp_api::ProvideRuntimeApi;
 use sp_blockchain::HeaderBackend;
 use sp_runtime::traits::Block as BlockT;
 use sp_runtime::traits::Header as HeaderT;
+use sp_runtime::generic::DigestItem;
+use sp_consensus::BlockOrigin;
+use sp_consensus_babe::digests::PreDigest;
 use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
-
+use codec::{Decode};
 use node_primitives::Block;
 use node_template_runtime::RuntimeApi;
 
@@ -90,16 +93,38 @@ pub fn new_full(config: Configuration, cli: Cli) -> Result<TaskManager, ServiceE
 async fn test_log_when_block_generate<B, C>(client: Arc<C>)
 where
 	B: BlockT,
-	C: BlockchainEvents<B> + 'static,
+	C: BlockchainEvents<B>
+	+ ProvideRuntimeApi<B>
+	+ BlockOf
+	+ AuxStore
+	+ HeaderBackend<B>
+	+ Send
+	+ Sync
+	+ 'static
+	+ BlockBackend<B>,
+	<<B as BlockT>::Header as HeaderT>::Number: Into<u32>,
 {
 	let mut notification_st = client.import_notification_stream();
 	while let Some(notification) = notification_st.next().await {
-		log::info!(
-			"import_notification_stream info:  hash {:?} number: {:?} all: {:?}",
-			notification.hash,
-			notification.header.number(),
-			notification
-		);
+		// if origin is Own and block height is 10's multiple, then log
+		let block_number: u32 = (*notification.header.number()).into();
+		if notification.origin == BlockOrigin::Own && block_number % 10 == 0 {
+			log::info!(
+				"import_notification_stream info:  hash {:?} number: {:?} origin: {:?}",
+				notification.hash,
+				notification.header.number(),
+				notification.origin,
+			);
+			for log in notification.header.digest().logs.iter() {
+				if let DigestItem::PreRuntime(consensus_engine_id, ref data) = *log {
+					if consensus_engine_id == sp_consensus_babe::BABE_ENGINE_ID {
+						if let Ok(pre_digest) = PreDigest::decode(&mut &data[..]) {
+							log::info!("pre_digest: {:?}", pre_digest);
+						}
+					}
+				}
+			}
+		}
 	}
 }
 
