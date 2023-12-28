@@ -3,7 +3,8 @@
 use std::sync::Arc;
 // use async_trait::async_trait;
 use futures::StreamExt;
-use sc_client_api::{BlockBackend, BlockchainEvents};
+use sc_client_api::BlockOf;
+use sc_client_api::{BlockchainEvents, BlockBackend, AuxStore};
 use sc_consensus_babe::SlotProportion;
 pub use sc_executor::NativeElseWasmExecutor;
 use sc_executor::WasmExecutor;
@@ -14,9 +15,10 @@ use sc_rpc_api::DenyUnsafe;
 use sc_service::{error::Error as ServiceError, Configuration, RpcHandlers, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use sc_transaction_pool_api::OffchainTransactionPoolFactory;
+use sp_api::ProvideRuntimeApi;
+use sp_blockchain::HeaderBackend;
 use sp_runtime::traits::Block as BlockT;
-use sp_runtime::traits::Header;
-
+use sp_runtime::traits::Header as HeaderT;
 use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
 
 use node_primitives::Block;
@@ -70,8 +72,6 @@ pub fn new_full(config: Configuration, cli: Cli) -> Result<TaskManager, ServiceE
 	)
 	.map_err(|e| ServiceError::Application(e.into()))?;
 
-	let client_c = client.clone();
-
 	task_manager.spawn_essential_handle().spawn(
 		"node-block-notification",
 		Some("substrate-exercise"),
@@ -95,24 +95,38 @@ where
 	let mut notification_st = client.import_notification_stream();
 	while let Some(notification) = notification_st.next().await {
 		log::info!(
-			"import_notification_stream info:  hash {:?} number: {:?}",
+			"import_notification_stream info:  hash {:?} number: {:?} all: {:?}",
 			notification.hash,
 			notification.header.number(),
+			notification
 		);
 	}
 }
 
 async fn test_log_when_block_finalized<B, C>(client: Arc<C>)
 where
-	B: BlockT,
-	C: BlockchainEvents<B> + 'static,
+B: BlockT,
+C: BlockchainEvents<B>
+	+ ProvideRuntimeApi<B>
+	+ BlockOf
+	+ AuxStore
+	+ HeaderBackend<B>
+	+ Send
+	+ Sync
+	+ 'static
+	+ BlockBackend<B>,
+<<B as BlockT>::Header as HeaderT>::Number: Into<u32>,
 {
+	// let finalized_block_number = client.chain_info().finalized_number;
 	let mut notification_st = client.finality_notification_stream();
 	while let Some(notification) = notification_st.next().await {
+		let finalized_block_number: u32 = client.info().finalized_number.into();
+
 		log::info!(
-			"finality_notification_stream info: hash: {:?} number: {:?}",
+			"finality_notification_stream info: hash: {:?} number: {:?} ff: {:?}",
 			notification.hash,
 			notification.header.number(),
+			finalized_block_number
 		);
 	}
 }
@@ -160,6 +174,9 @@ pub fn new_full_base(
 	} = new_partial(&config)?;
 	let mut net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
 
+	let number = client.chain_info().finalized_number;
+	log::info!("finalized_number: {:?}", number);
+	
 	let shared_voter_state = rpc_setup;
 	let grandpa_protocol_name = sc_consensus_grandpa::protocol_standard_name(
 		&client.block_hash(0).ok().flatten().expect("Genesis block exists; qed"),
