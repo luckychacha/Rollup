@@ -496,6 +496,7 @@ pub fn new_partial(
 					);
 
 				// Add more Inherent Data Providers here if needed.
+				// These will then be added to the `InherentData` of each block.
 				Ok((slot, timestamp))
 			},
 			spawner: &task_manager.spawn_essential_handle(),
