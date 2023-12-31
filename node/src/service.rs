@@ -106,7 +106,8 @@ where
 {
 	let mut notification_st = client.import_notification_stream();
 	while let Some(notification) = notification_st.next().await {
-		// if origin is Own and block height is 10's multiple, then log
+		// if origin is Own and block height is 10's multiple, then log.
+		// nodes will log in turn, because the block height is different.
 		let block_number: u32 = (*notification.header.number()).into();
 		if notification.origin == BlockOrigin::Own && block_number % 10 == 0 {
 			log::info!(
@@ -494,6 +495,7 @@ pub fn new_partial(
 						slot_duration,
 					);
 
+				// Add more Inherent Data Providers here if needed.
 				Ok((slot, timestamp))
 			},
 			spawner: &task_manager.spawn_essential_handle(),
