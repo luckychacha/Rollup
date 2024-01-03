@@ -23,7 +23,7 @@ use sp_runtime::generic::DigestItem;
 use sp_consensus::BlockOrigin;
 use sp_consensus_babe::digests::PreDigest;
 use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
-use codec::{Decode};
+use codec::Decode;
 use node_primitives::Block;
 use node_template_runtime::RuntimeApi;
 
