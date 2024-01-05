@@ -2,9 +2,13 @@
 
 use std::sync::Arc;
 // use async_trait::async_trait;
+use codec::Decode;
+use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
 use futures::StreamExt;
+use node_primitives::Block;
+use node_template_runtime::RuntimeApi;
 use sc_client_api::BlockOf;
-use sc_client_api::{BlockchainEvents, BlockBackend, AuxStore};
+use sc_client_api::{AuxStore, BlockBackend, BlockchainEvents};
 use sc_consensus_babe::SlotProportion;
 pub use sc_executor::NativeElseWasmExecutor;
 use sc_executor::WasmExecutor;
@@ -17,15 +21,11 @@ use sc_telemetry::{Telemetry, TelemetryWorker};
 use sc_transaction_pool_api::OffchainTransactionPoolFactory;
 use sp_api::ProvideRuntimeApi;
 use sp_blockchain::HeaderBackend;
-use sp_runtime::traits::Block as BlockT;
-use sp_runtime::traits::Header as HeaderT;
-use sp_runtime::generic::DigestItem;
 use sp_consensus::BlockOrigin;
 use sp_consensus_babe::digests::PreDigest;
-use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
-use codec::Decode;
-use node_primitives::Block;
-use node_template_runtime::RuntimeApi;
+use sp_runtime::generic::DigestItem;
+use sp_runtime::traits::Block as BlockT;
+use sp_runtime::traits::Header as HeaderT;
 
 use crate::{
 	cli::Cli,
@@ -94,14 +94,14 @@ async fn test_log_when_block_generate<B, C>(client: Arc<C>)
 where
 	B: BlockT,
 	C: BlockchainEvents<B>
-	+ ProvideRuntimeApi<B>
-	+ BlockOf
-	+ AuxStore
-	+ HeaderBackend<B>
-	+ Send
-	+ Sync
-	+ 'static
-	+ BlockBackend<B>,
+		+ ProvideRuntimeApi<B>
+		+ BlockOf
+		+ AuxStore
+		+ HeaderBackend<B>
+		+ Send
+		+ Sync
+		+ 'static
+		+ BlockBackend<B>,
 	<<B as BlockT>::Header as HeaderT>::Number: Into<u32>,
 {
 	let mut notification_st = client.import_notification_stream();
@@ -131,17 +131,17 @@ where
 
 async fn test_log_when_block_finalized<B, C>(client: Arc<C>)
 where
-B: BlockT,
-C: BlockchainEvents<B>
-	+ ProvideRuntimeApi<B>
-	+ BlockOf
-	+ AuxStore
-	+ HeaderBackend<B>
-	+ Send
-	+ Sync
-	+ 'static
-	+ BlockBackend<B>,
-<<B as BlockT>::Header as HeaderT>::Number: Into<u32>,
+	B: BlockT,
+	C: BlockchainEvents<B>
+		+ ProvideRuntimeApi<B>
+		+ BlockOf
+		+ AuxStore
+		+ HeaderBackend<B>
+		+ Send
+		+ Sync
+		+ 'static
+		+ BlockBackend<B>,
+	<<B as BlockT>::Header as HeaderT>::Number: Into<u32>,
 {
 	// let finalized_block_number = client.chain_info().finalized_number;
 	let mut notification_st = client.finality_notification_stream();
@@ -202,7 +202,7 @@ pub fn new_full_base(
 
 	let number = client.chain_info().finalized_number;
 	log::info!("finalized_number: {:?}", number);
-	
+
 	let shared_voter_state = rpc_setup;
 	let grandpa_protocol_name = sc_consensus_grandpa::protocol_standard_name(
 		&client.block_hash(0).ok().flatten().expect("Genesis block exists; qed"),
