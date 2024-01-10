@@ -7,6 +7,7 @@ use frame_benchmarking_cli::SUBSTRATE_REFERENCE_HARDWARE;
 use futures::StreamExt;
 use node_primitives::Block;
 use node_template_runtime::RuntimeApi;
+use primitives_max_block_author::MaxBlockAuthor;
 use sc_client_api::BlockOf;
 use sc_client_api::{AuxStore, BlockBackend, BlockchainEvents};
 use sc_consensus_babe::SlotProportion;
@@ -26,6 +27,7 @@ use sp_consensus_babe::digests::PreDigest;
 use sp_runtime::generic::DigestItem;
 use sp_runtime::traits::Block as BlockT;
 use sp_runtime::traits::Header as HeaderT;
+use futures::lock::Mutex;
 
 use crate::{
 	cli::Cli,
@@ -281,6 +283,10 @@ pub fn new_full_base(
 	let (block_import, grandpa_link, babe_link) = import_setup;
 
 	(with_startup_data)(&block_import, &babe_link);
+	let _max_block_author = Arc::new(Mutex::new(MaxBlockAuthor {
+		times: 0,
+		awaiting_inherent_processing: false,
+	}));
 
 	if let sc_service::config::Role::Authority { .. } = &role {
 		let proposer = sc_basic_authorship::ProposerFactory::new(

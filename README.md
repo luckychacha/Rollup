@@ -1,4 +1,6 @@
-# Substrate Node Template
+# Substrate Node Exercise
+
+My exercises based on Substrate.
 
 A fresh [Substrate](https://substrate.io/) node, ready for hacking :rocket:
 

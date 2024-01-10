@@ -33,3 +33,9 @@ impl sp_inherents::InherentDataProvider for MaxBlockAuthorInherentDataProvider {
 		None
 	}
 }
+
+#[derive(Clone)]
+pub struct MaxBlockAuthor {
+	pub times: u32,
+	pub awaiting_inherent_processing: bool,
+}
