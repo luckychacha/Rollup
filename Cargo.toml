@@ -24,6 +24,8 @@ log = "0.4.17"
 rand = "0.8"
 hex-literal = "0.3.4"
 
+scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
+
 # Substrate Client
 sc-cli = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 sc-executor = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
