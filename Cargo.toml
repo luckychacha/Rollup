@@ -120,13 +120,14 @@ frame-benchmarking-cli = { version = "4.0.0-dev", git = "https://github.com/pari
 node-template-runtime = { version = "4.0.0-dev", path = "runtime" }
 node-primitives = { version = "2.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0", default-features = false }
 primitives-max-block-author = { path = "primitives/max_block_author", default-features = false }
+mc-data-availability = { path = "client/data-availability" }
 
 # CLI-specific dependencies
 try-runtime-cli = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 
 
 ## Avail
-# avail-subxt = { git = "https://github.com/availproject/avail", version = "0.4.0", tag = "v1.8.0.0" }
-# subxt = "0.29"
+avail-subxt = { git = "https://github.com/availproject/avail", version = "0.4.0", tag = "v1.8.0.0" }
+subxt = { version = "0.29", default-features = false }
 # anyhow = "1.0.75"
 # futures-timer = "3.0"

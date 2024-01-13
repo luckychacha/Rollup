@@ -83,6 +83,7 @@ frame-benchmarking-cli.workspace = true
 node-template-runtime.workspace = true
 node-primitives.workspace = true
 primitives-max-block-author.workspace = true
+mc-data-availability.workspace = true
 
 # CLI-specific dependencies
 try-runtime-cli ={ workspace = true, optional = true }
