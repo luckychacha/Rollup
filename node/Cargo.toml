@@ -87,7 +87,6 @@ mc-data-availability.workspace = true
 # CLI-specific dependencies
 try-runtime-cli ={ workspace = true, optional = true }
 
-
 subxt = { version = "0.29", default-features = false }
 
 [build-dependencies]
