@@ -84,9 +84,11 @@ node-template-runtime.workspace = true
 node-primitives.workspace = true
 primitives-max-block-author.workspace = true
 mc-data-availability.workspace = true
-subxt.workspace = true
 # CLI-specific dependencies
 try-runtime-cli ={ workspace = true, optional = true }
+
+
+subxt = { version = "0.29", default-features = false }
 
 [build-dependencies]
 substrate-build-script-utils.workspace = true
