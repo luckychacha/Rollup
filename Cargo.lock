@@ -4368,6 +4368,7 @@ dependencies = [
  "sp-transaction-storage-proof",
  "substrate-build-script-utils",
  "substrate-frame-rpc-system",
+ "subxt",
  "try-runtime-cli",
 ]
 
@@ -5387,7 +5388,6 @@ dependencies = [
  "sp-core 21.0.0 (git+https://github.com/paritytech/substrate.git?branch=polkadot-v1.0.0)",
  "sp-inherents",
  "sp-runtime 24.0.0 (git+https://github.com/paritytech/substrate.git?branch=polkadot-v1.0.0)",
- "subxt",
 ]
 
 [[package]]

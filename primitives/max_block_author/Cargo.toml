@@ -15,8 +15,6 @@ sp-core = { version = "21.0.0", default-features = false, git = "https://github.
 sp-runtime = { version = "24.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0" }
 sp-inherents = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v1.0.0", default-features = false }
 
-subxt = { workspace = true, default-features = false }
-
 [features]
 default = [ "std" ]
 std = [
